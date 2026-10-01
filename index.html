@@ -3,7 +3,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>ekranoplan.org</title>
+  <title>ekranoplan.org — ground effect</title>
+  <meta name="description" content="One dimensionless number, h/b, and the three Soviet ekranoplans that lived inside it. The scrollbar is an altimeter; all the content is below h/b 0.5.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23eee'/%3E%3Cpath d='M4 14 L28 14 L22 20 L10 20 Z' fill='none' stroke='%23111' stroke-width='1.5'/%3E%3Cline x1='2' y1='26' x2='30' y2='26' stroke='%23111' stroke-width='1.5'/%3E%3C/svg%3E">
   <style>
     :root {
       color-scheme: light dark;
@@ -24,43 +26,40 @@
       }
     }
 
-    *, *::before, *::after {
-      box-sizing: border-box;
-    }
+    *, *::before, *::after { box-sizing: border-box; }
 
-    html, body {
-      margin: 0;
-      padding: 0;
-      height: 100vh;
-      height: 100dvh;
-      overflow: hidden;
-    }
+    html { scroll-behavior: smooth; }
 
     body {
+      margin: 0;
       background: var(--bg);
       color: var(--fg);
       font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
       font-weight: 300;
-      display: grid;
-      grid-template-rows: auto 1fr auto;
-      padding: 28px;
+      font-size: 14px;
+      line-height: 1.65;
     }
 
-    header, footer {
+    a { color: var(--fg); }
+
+    ::selection {
+      background: var(--sel-bg);
+      color: var(--sel-fg);
+    }
+
+    /* ---- fixed plate header ---- */
+
+    header.plate {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 10;
       display: flex;
       justify-content: space-between;
       align-items: baseline;
       gap: 24px;
-    }
-
-    header {
+      padding: 12px 28px;
+      background: var(--bg);
       border-bottom: 1px solid var(--line);
-      padding-bottom: 10px;
-    }
-
-    footer {
-      border-top: 1px solid var(--line);
-      padding-top: 10px;
     }
 
     .lbl {
@@ -69,62 +68,694 @@
       text-transform: uppercase;
     }
 
-    .dim {
-      color: var(--dim);
+    .dim { color: var(--dim); }
+
+    /* ---- instrument: HUD readout ---- */
+
+    #hud {
+      position: fixed;
+      top: 64px;
+      right: 28px;
+      z-index: 10;
+      font-size: 11px;
+      line-height: 1.7;
+      text-align: right;
+      letter-spacing: .06em;
+      color: var(--fg);
+      user-select: none;
     }
+
+    #hud .k { color: var(--dim); margin-right: 8px; }
+    #hud .ref {
+      margin-top: 10px;
+      color: var(--dim);
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      font-size: 9px;
+    }
+
+    /* ---- instrument: left-edge ruler ---- */
+
+    #ruler {
+      position: fixed;
+      left: 28px;
+      top: 50%;
+      transform: translateY(-50%);
+      height: 46vh;
+      z-index: 10;
+      font-size: 9px;
+      color: var(--dim);
+      user-select: none;
+    }
+
+    #ruler .scale {
+      position: absolute;
+      top: 0; bottom: 0;
+      left: 0;
+      width: 1px;
+      background: var(--line);
+    }
+
+    #ruler .tick {
+      position: absolute;
+      left: 0;
+      padding-left: 8px;
+      white-space: nowrap;
+    }
+
+    #ruler .tick::before {
+      content: "";
+      position: absolute;
+      left: 0; top: 0;
+      width: 5px; height: 1px;
+      background: var(--line);
+    }
+
+    #ruler #marker {
+      position: absolute;
+      left: -4px;
+      width: 0; height: 0;
+      border-top: 4px solid transparent;
+      border-bottom: 4px solid transparent;
+      border-left: 6px solid var(--sel-bg);
+      transform: translateY(-4px);
+    }
+
+    @media (max-width: 759px) {
+      #ruler { display: none; }
+    }
+
+    @media (max-width: 559px) {
+      #hud { position: static; text-align: left; padding: 12px 28px 0; }
+      #hud .k { display: inline-block; width: 3.2em; }
+    }
+
+    /* ---- the column of air ---- */
 
     main {
-      display: grid;
-      justify-items: center;
-      padding: 40px 0;
-      min-height: 0;
-      overflow: hidden;
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 96px 28px 0;
     }
+
+    section.band {
+      position: relative;
+    }
+
+    .boundary {
+      border-top: 1px solid var(--line);
+      padding-top: 8px;
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      font-size: 11px;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+    }
+
+    .boundary .right { color: var(--dim); }
+
+    /* sky: h/b 1.50 → 1.00 */
+    #sky { height: 170vh; }
+
+    #sky .drift {
+      position: sticky;
+      top: 40vh;
+      color: var(--dim);
+      max-width: 34ch;
+    }
+
+    /* transition: h/b 1.00 → 0.50 */
+    #transition { height: 150vh; }
+
+    #transition .drift {
+      position: sticky;
+      top: 30vh;
+      max-width: 46ch;
+    }
+
+    /* ground effect: h/b 0.50 → 0.05 */
+    #ge { min-height: 420vh; }
+
+    /* surface: h/b 0.05 → 0.00 */
+    #surface { min-height: 80vh; }
+
+    #surface .drift {
+      max-width: 46ch;
+      padding-top: 14vh;
+    }
+
+    p { margin: 0 0 1.1em; }
+
+    .figword { color: var(--dim); }
+
+    /* ---- figures ---- */
 
     figure {
-      margin: 0;
-      width: auto;
-      height: 100%;
-      min-height: 0;
-      max-width: 100%;
-      aspect-ratio: 3/2;
+      margin: 3.5rem 0;
     }
 
-    .frame {
-      height: 100%;
-      border: 1px solid var(--line);
-      padding: 14px;
-      box-sizing: border-box;
+    figure .figno {
+      font-size: 11px;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 8px;
+      margin-bottom: 18px;
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
     }
 
-    .frame img {
+    figure svg {
       display: block;
       width: 100%;
-      height: 100%;
-      object-fit: cover;
-      filter: grayscale(1);
+      height: auto;
+      color: var(--fg);
     }
 
-    ::selection {
-      background: var(--sel-bg);
-      color: var(--sel-fg);
+    figure svg text {
+      font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+      font-size: 10px;
+      fill: currentColor;
+    }
+
+    figure svg .hair { stroke: currentColor; stroke-width: 1; fill: none; }
+    figure svg .body { stroke: currentColor; stroke-width: 1.5; fill: none; }
+    figure svg .dash { stroke: currentColor; stroke-width: 1; fill: none; stroke-dasharray: 4 4; }
+    figure svg .ghost { stroke: currentColor; stroke-width: 1; fill: none; stroke-dasharray: 2 3; opacity: .55; }
+    figure svg .dimln { stroke: currentColor; stroke-width: 1; fill: none; }
+    figure svg .dot { fill: currentColor; }
+
+    figcaption {
+      margin-top: 12px;
+      color: var(--dim);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    /* ---- spec blocks ---- */
+
+    .specs {
+      margin: 14px 0 0;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 2px 32px;
+      font-size: 12.5px;
+    }
+
+    .specs div {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      border-bottom: 1px dotted var(--dim);
+      padding: 3px 0;
+    }
+
+    .specs dt { color: var(--dim); letter-spacing: .08em; text-transform: uppercase; font-size: 10.5px; padding-top: 2px; }
+    .specs dd { margin: 0; text-align: right; }
+
+    .note {
+      margin-top: 16px;
+      color: var(--dim);
+      font-size: 12.5px;
+      max-width: 52ch;
+    }
+
+    /* ---- flight log ---- */
+
+    #log {
+      min-height: 60vh;
+    }
+
+    .logline {
+      display: grid;
+      grid-template-columns: 4.5em 5.5em minmax(0, 1fr);
+      gap: 0 20px;
+      padding: 7px 0;
+      border-bottom: 1px dotted var(--dim);
+      font-size: 12.5px;
+    }
+
+    .logline .yr { letter-spacing: .08em; }
+    .logline .pl { color: var(--dim); text-transform: uppercase; font-size: 10.5px; letter-spacing: .14em; padding-top: 2px; }
+
+    .logline.last { border-bottom: none; }
+
+    /* ---- waterline & colophon ---- */
+
+    #waterline {
+      margin-top: 10vh;
+      border-top: 2px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      padding-top: 8px;
+      font-size: 11px;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+    }
+
+    #colophon {
+      color: var(--dim);
+      font-size: 11.5px;
+      line-height: 1.7;
+      max-width: 56ch;
+      margin: 7vh 0 12vh;
+    }
+
+    #colophon .lbl { display: block; margin-bottom: 12px; color: var(--fg); }
+
+    footer.plate {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 24px;
+      border-top: 1px solid var(--line);
+      padding: 10px 28px 28px;
+      font-size: 11px;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+    }
+
+    noscript p {
+      max-width: 46ch;
+      color: var(--dim);
+      font-size: 12px;
     }
   </style>
 </head>
 <body>
-  <header>
+
+  <header class="plate">
     <div class="lbl">ekranoplan.org</div>
-    <div class="lbl dim">08 / 25</div>
+    <div class="lbl dim">ground effect · caspian sea</div>
   </header>
+
+  <div id="hud" aria-hidden="true">
+    <div><span class="k">h/b</span><span id="hb">1.500</span></div>
+    <div><span class="k">alt</span><span id="alt">56.7 m</span></div>
+    <div><span class="k">φ</span><span id="phi">1.000</span></div>
+    <div><span class="k">ind. drag</span><span id="drag">−0.0%</span></div>
+    <div class="ref">ref span · km · 37.8 m</div>
+  </div>
+
+  <div id="ruler" aria-hidden="true">
+    <div class="scale"></div>
+    <div id="marker"></div>
+  </div>
+
   <main>
-    <figure>
-      <div class="frame">
-        <img src="https://picsum.photos/800/" alt="">
+
+    <!-- ============ SKY · h/b 1.50 → 1.00 ============ -->
+
+    <section class="band" id="sky" data-hb-top="1.5" data-hb-bot="1.0">
+      <div class="boundary">
+        <span>h/b 1.50 — out of ground effect</span>
+        <span class="right">descent begins</span>
       </div>
-    </figure>
+      <div class="drift">
+        <p class="dim">aircraft country.</p>
+        <p class="dim">every conventional wing lives up here — free to climb, free to bank, free to turn. nothing on this page can reach it.</p>
+        <p class="dim">descend.</p>
+      </div>
+    </section>
+
+    <!-- ============ TRANSITION · h/b 1.00 → 0.50 ============ -->
+
+    <section class="band" id="transition" data-hb-top="1.0" data-hb-bot="0.5">
+      <div class="boundary">
+        <span>h/b 1.00 — in ground effect</span>
+        <span class="right">the surface begins to answer</span>
+      </div>
+      <div class="drift">
+        <p><span class="figword">h/b</span> — height above the surface, divided by wingspan. the one dimensionless number an ekranoplan lives by.</p>
+        <p>below one wingspan of height, the ground starts to screen the wing's downwash. <span class="figword">экран</span> (<span class="figword">ekran</span>) is russian for <em>screen</em>. ekranoplan: a glider screened by the ground.</p>
+        <p>at this boundary the induced-drag penalty has fallen 0.4%. the instrument is not wrong — it is boring. the interesting sky is lower.</p>
+        <p>a conventional aircraft visits this band only at takeoff and landing. the ekranoplan never leaves it: above ground effect its wing is too small to fly, and in a bank the lowered wingtip meets the sea.</p>
+      </div>
+    </section>
+
+    <!-- ============ GROUND EFFECT · h/b 0.50 → 0.05 ============ -->
+
+    <section class="band" id="ge" data-hb-top="0.5" data-hb-bot="0.05">
+      <div class="boundary">
+        <span>h/b 0.50 — ge boundary</span>
+        <span class="right">the textbooks' edge of “significant” effect</span>
+      </div>
+
+      <div class="drift" style="position:sticky; top:24vh; max-width:48ch; margin-bottom:12vh;">
+        <p>the textbooks call this the edge of significant ground effect. the curve disagrees: nearly everything happens in the last tenth of a span.</p>
+        <p>three aircraft were built to live down there, by rostislav alexeyev's central hydrofoil design bureau in gorky — a hydrofoil yard that taught a ship to fly, not a plane to swim.</p>
+      </div>
+
+      <figure id="curve">
+        <div class="figno"><span>fig. 1 — induced drag factor φ</span><span class="dim">in ground effect ÷ out</span></div>
+        <svg viewBox="0 0 640 300" role="img" aria-label="Graph of induced drag factor phi against height-to-span ratio: flat near 1.0 until h/b 0.25, then falling steeply to 0.09 at h/b 0.02.">
+          <!-- plot frame -->
+          <rect class="hair" x="48" y="24" width="576" height="236"/>
+          <!-- y gridlines -->
+          <line class="ghost" x1="48" y1="142" x2="624" y2="142"/>
+          <text x="40" y="264" text-anchor="end">0</text>
+          <text x="40" y="146" text-anchor="end">0.5</text>
+          <text x="40" y="28" text-anchor="end">1.0</text>
+          <text x="40" y="14" text-anchor="end">φ</text>
+          <!-- free-air line -->
+          <line class="ghost" x1="48" y1="24" x2="624" y2="24"/>
+          <text x="628" y="24" text-anchor="start">free air</text>
+          <!-- x ticks -->
+          <g>
+            <line class="dimln" x1="48"  y1="260" x2="48"  y2="266"/> <text x="48"  y="280" text-anchor="middle">0</text>
+            <line class="dimln" x1="86"  y1="260" x2="86"  y2="266"/> <text x="86"  y="280" text-anchor="middle">0.10</text>
+            <line class="dimln" x1="144" y1="260" x2="144" y2="266"/> <text x="144" y="280" text-anchor="middle">0.25</text>
+            <line class="dimln" x1="240" y1="260" x2="240" y2="266"/> <text x="240" y="280" text-anchor="middle">0.50</text>
+            <line class="dimln" x1="432" y1="260" x2="432" y2="266"/> <text x="432" y="280" text-anchor="middle">1.00</text>
+            <line class="dimln" x1="624" y1="260" x2="624" y2="266"/> <text x="624" y="280" text-anchor="middle">1.50</text>
+            <text x="628" y="292" text-anchor="end">h/b</text>
+          </g>
+          <!-- guides to key points -->
+          <line class="dash" x1="86"  y1="90"  x2="86"  y2="260"/>
+          <line class="dash" x1="240" y1="28"  x2="240" y2="260"/>
+          <!-- the curve -->
+          <path class="body" d="M48.0,260.0 L57.6,227.4 L67.2,167.9 L76.8,120.7 L86.4,90.3 L96.0,71.2 L105.6,58.9 L115.2,50.7 L124.8,45.0 L134.4,40.9 L144.0,37.9 L153.6,35.6 L163.2,33.8 L172.8,32.4 L182.4,31.3 L192.0,30.4 L201.6,29.6 L211.2,29.0 L220.8,28.5 L230.4,28.0 L240.0,27.6 L249.6,27.3 L259.2,27.0 L268.8,26.8 L278.4,26.5 L288.0,26.3 L297.6,26.2 L307.2,26.0 L316.8,25.9 L326.4,25.7 L336.0,25.6 L345.6,25.5 L355.2,25.4 L364.8,25.3 L374.4,25.3 L384.0,25.2 L393.6,25.1 L403.2,25.1 L412.8,25.0 L422.4,25.0 L432.0,24.9 L441.6,24.9 L451.2,24.8 L460.8,24.8 L470.4,24.8 L480.0,24.7 L489.6,24.7 L499.2,24.7 L508.8,24.6 L518.4,24.6 L528.0,24.6 L537.6,24.6 L547.2,24.5 L556.8,24.5 L566.4,24.5 L576.0,24.5 L585.6,24.5 L595.2,24.5 L604.8,24.4 L614.4,24.4 L624.0,24.4"/>
+          <!-- key points -->
+          <circle class="dot" cx="240" cy="27.6" r="2.5"/> <text x="240" y="44" text-anchor="middle">0.50 → −1.5% (“significant”)</text>
+          <circle class="dot" cx="86.4" cy="90.3" r="2.5"/> <text x="94" y="90" text-anchor="start">0.10 → −28%</text>
+          <circle class="dot" cx="57.6" cy="227.4" r="2.5"/> <text x="66" y="224" text-anchor="start">0.02 → −91%</text>
+          <!-- formula -->
+          <text x="440" y="120">φ = (16 h/b)² / (1 + (16 h/b)²)</text>
+          <text x="440" y="136" opacity=".6">after wieselsberger</text>
+        </svg>
+        <figcaption>induced drag factor, in ground effect over out. nothing happens for most of the descent — then everything happens. ekranoplans cruise on the steep left wall of this curve.</figcaption>
+      </figure>
+
+      <figure id="km">
+        <div class="figno"><span>fig. 2 — km · korabl maket · “ship prototype”</span><span class="dim">elevation &amp; section</span></div>
+        <svg viewBox="0 0 520 210" role="img" aria-label="Schematic side view of the KM ekranoplan: long planing hull, eight booster turbojets on a pylon above the mid fuselage, two cruise engines at the top of a tall fin. Length dimension 92 metres.">
+          <!-- waterline -->
+          <line class="dash" x1="30" y1="172" x2="490" y2="172"/>
+          <text x="490" y="186" text-anchor="end" class="dim">0 m</text>
+          <!-- hull -->
+          <path class="body" d="M58,116 C64,110 70,106 80,104 L396,100 L410,100 L410,148 L390,148 L96,148 C82,146 68,134 58,116 Z"/>
+          <!-- cockpit -->
+          <path class="hair" d="M88,110 L100,109 L100,115 L88,115 Z"/>
+          <!-- booster pylon + engines (2 of 8 in view) -->
+          <path class="hair" d="M166,104 L188,104 L184,78 L172,78 Z"/>
+          <circle class="body" cx="176" cy="70" r="7"/>
+          <circle class="ghost" cx="192" cy="66" r="7"/>
+          <!-- fin + cruise engines -->
+          <path class="body" d="M368,100 L360,50 L382,44 L398,64 L398,100"/>
+          <circle class="body" cx="360" cy="56" r="7"/>
+          <circle class="ghost" cx="352" cy="64" r="7"/>
+          <!-- length dimension -->
+          <g>
+            <line class="dimln" x1="58" y1="192" x2="410" y2="192"/>
+            <line class="dimln" x1="58" y1="186" x2="58" y2="198"/>
+            <line class="dimln" x1="410" y1="186" x2="410" y2="198"/>
+            <path class="dimln" d="M58,192 L65,189 M58,192 L65,195 M410,192 L403,189 M410,192 L403,195"/>
+            <text x="234" y="206" text-anchor="middle">92 m</text>
+          </g>
+        </svg>
+        <svg viewBox="0 0 260 130" role="img" aria-label="Front view of the KM: tall fin, deep hull, very low stubby wing. Span dimension 37.8 metres.">
+          <!-- fin -->
+          <path class="body" d="M130,24 L130,60"/>
+          <!-- fin engines (pair) -->
+          <circle class="body" cx="130" cy="34" r="6"/>
+          <circle class="ghost" cx="130" cy="46" r="6"/>
+          <!-- engine mast -->
+          <path class="hair" d="M126,52 L134,52 L134,60"/>
+          <!-- hull -->
+          <path class="body" d="M108,60 L152,60 L146,94 L114,94 Z"/>
+          <!-- wing (low, stubby, huge chord) -->
+          <path class="body" d="M52,84 L208,84 L208,90 L52,90 Z"/>
+          <!-- span dimension -->
+          <g>
+            <line class="dimln" x1="52" y1="112" x2="208" y2="112"/>
+            <line class="dimln" x1="52" y1="106" x2="52" y2="118"/>
+            <line class="dimln" x1="208" y1="106" x2="208" y2="118"/>
+            <path class="dimln" d="M52,112 L59,109 M52,112 L59,115 M208,112 L201,109 M208,112 L201,115"/>
+            <text x="130" y="126" text-anchor="middle">span 37.8 m</text>
+          </g>
+        </svg>
+        <dl class="specs">
+          <div><dt>length</dt><dd>92 m</dd></div>
+          <div><dt>span</dt><dd>37.8 m</dd></div>
+          <div><dt>mass, max</dt><dd>544 t</dd></div>
+          <div><dt>engines</dt><dd>10 × vd-7</dd></div>
+          <div><dt>first flight</dt><dd>oct 1966</dd></div>
+          <div><dt>end</dt><dd>sank 1980</dd></div>
+        </dl>
+        <p class="note">eight booster turbojets blew air under the wing for takeoff; two more on the fin cruised it at ~500 km/h. the cia's satellite interpreters found it at kaspiysk in 1967 and named it the <em>caspian sea monster</em> — the nickname outlived the program. at 544 tonnes it was the largest flying machine of its era, and the largest ekranoplan ever.</p>
+      </figure>
+
+      <figure id="orlyonok">
+        <div class="figno"><span>fig. 3 — a-90 orlyonok · “eaglet”</span><span class="dim">elevation &amp; section</span></div>
+        <svg viewBox="0 0 520 210" role="img" aria-label="Schematic side view of the A-90 Orlyonok: smaller hull, canard foreplane at the nose, one large turboprop on top of the swept fin. Length dimension 58 metres.">
+          <!-- waterline -->
+          <line class="dash" x1="30" y1="172" x2="490" y2="172"/>
+          <text x="490" y="186" text-anchor="end" class="dim">0 m</text>
+          <!-- hull -->
+          <path class="body" d="M150,124 C156,116 164,110 176,106 L352,102 L364,102 L364,148 L344,148 L172,148 C160,146 152,136 150,124 Z"/>
+          <!-- cockpit -->
+          <path class="hair" d="M180,112 L192,111 L192,117 L180,117 Z"/>
+          <!-- canard -->
+          <path class="hair" d="M168,132 L208,130"/>
+          <!-- nose boosters -->
+          <circle class="body" cx="192" cy="122" r="5"/>
+          <circle class="ghost" cx="204" cy="122" r="5"/>
+          <!-- fin + nk-12 -->
+          <path class="body" d="M330,102 L320,72 L342,68 L354,86 L354,102"/>
+          <ellipse class="body" cx="330" cy="64" rx="15" ry="6"/>
+          <ellipse class="body" cx="330" cy="64" rx="2.5" ry="17"/>
+          <ellipse class="ghost" cx="330" cy="64" rx="2.5" ry="21"/>
+          <!-- length dimension -->
+          <g>
+            <line class="dimln" x1="150" y1="192" x2="364" y2="192"/>
+            <line class="dimln" x1="150" y1="186" x2="150" y2="198"/>
+            <line class="dimln" x1="364" y1="186" x2="364" y2="198"/>
+            <path class="dimln" d="M150,192 L157,189 M150,192 L157,195 M364,192 L357,189 M364,192 L357,195"/>
+            <text x="257" y="206" text-anchor="middle">58 m</text>
+          </g>
+        </svg>
+        <svg viewBox="0 0 260 130" role="img" aria-label="Front view of the Orlyonok: propeller disc on the fin, narrow hull, moderate wing. Span dimension 31.5 metres.">
+          <!-- prop disc, edge-on -->
+          <line class="body" x1="110" y1="50" x2="150" y2="50"/>
+          <line class="ghost" x1="106" y1="44" x2="154" y2="44"/>
+          <line class="ghost" x1="106" y1="56" x2="154" y2="56"/>
+          <!-- fin -->
+          <path class="body" d="M130,42 L130,80"/>
+          <!-- hull -->
+          <path class="body" d="M112,80 L148,80 L142,104 L118,104 Z"/>
+          <!-- wing -->
+          <path class="body" d="M70,96 L190,96 L190,102 L70,102 Z"/>
+          <!-- span dimension -->
+          <g>
+            <line class="dimln" x1="70" y1="112" x2="190" y2="112"/>
+            <line class="dimln" x1="70" y1="106" x2="70" y2="118"/>
+            <line class="dimln" x1="190" y1="106" x2="190" y2="118"/>
+            <path class="dimln" d="M70,112 L77,109 M70,112 L77,115 M190,112 L183,109 M190,112 L183,115"/>
+            <text x="130" y="126" text-anchor="middle">span 31.5 m</text>
+          </g>
+        </svg>
+        <dl class="specs">
+          <div><dt>length</dt><dd>58 m</dd></div>
+          <div><dt>span</dt><dd>31.5 m</dd></div>
+          <div><dt>mass, max</dt><dd>~140 t</dd></div>
+          <div><dt>engines</dt><dd>2 × nk-8 + nk-12</dd></div>
+          <div><dt>first flight</dt><dd>1972</dd></div>
+          <div><dt>built</dt><dd>~5</dd></div>
+        </dl>
+        <p class="note">the transport — the only ekranoplan to serve in numbers, hauling naval infantry at ~400 km/h. the nk-12 on its fin is the tu-95's engine; the nose jets existed only to blow air under the wing until it was flying.</p>
+      </figure>
+
+      <figure id="lun">
+        <div class="figno"><span>fig. 4 — md-160 · lun · “harrier”</span><span class="dim">elevation &amp; section</span></div>
+        <svg viewBox="0 0 520 210" role="img" aria-label="Schematic side view of the Lun: hull like the KM's, eight turbofans forward, six missile tubes along the spine. Length dimension 73.8 metres.">
+          <!-- waterline -->
+          <line class="dash" x1="30" y1="172" x2="490" y2="172"/>
+          <text x="490" y="186" text-anchor="end" class="dim">0 m</text>
+          <!-- hull -->
+          <path class="body" d="M120,124 C126,116 134,110 146,106 L372,102 L384,102 L384,148 L364,148 L142,148 C130,146 122,136 120,124 Z"/>
+          <!-- cockpit -->
+          <path class="hair" d="M152,112 L164,111 L164,117 L152,117 Z"/>
+          <!-- booster pods (2 of 8 in view) -->
+          <path class="hair" d="M180,106 L204,106 L200,72 L186,72 Z"/>
+          <circle class="body" cx="190" cy="64" r="7"/>
+          <circle class="ghost" cx="206" cy="60" r="7"/>
+          <!-- missile tubes, 3 of 6 in view -->
+          <rect class="hair" x="240" y="92" width="36" height="9" rx="4"/>
+          <rect class="hair" x="282" y="90" width="36" height="9" rx="4"/>
+          <rect class="hair" x="324" y="88" width="36" height="9" rx="4"/>
+          <!-- fin -->
+          <path class="body" d="M344,100 L336,42 L358,38 L370,60 L370,100"/>
+          <!-- length dimension -->
+          <g>
+            <line class="dimln" x1="120" y1="192" x2="384" y2="192"/>
+            <line class="dimln" x1="120" y1="186" x2="120" y2="198"/>
+            <line class="dimln" x1="384" y1="186" x2="384" y2="198"/>
+            <path class="dimln" d="M120,192 L127,189 M120,192 L127,195 M384,192 L377,189 M384,192 L377,195"/>
+            <text x="252" y="206" text-anchor="middle">73.8 m</text>
+          </g>
+        </svg>
+        <svg viewBox="0 0 260 130" role="img" aria-label="Front view of the Lun: tall fin, four turbofan pods on two masts, wide flat wing. Span dimension 44 metres.">
+          <!-- fin -->
+          <path class="body" d="M130,20 L130,60"/>
+          <!-- engine pods, 2+2 of 8 in view -->
+          <path class="hair" d="M96,60 L164,60 L164,66 L96,66 Z"/>
+          <circle class="body" cx="106" cy="52" r="5"/>
+          <circle class="ghost" cx="118" cy="52" r="5"/>
+          <circle class="body" cx="154" cy="52" r="5"/>
+          <circle class="ghost" cx="142" cy="52" r="5"/>
+          <!-- missile tubes, 3 of 6 head-on -->
+          <circle class="hair" cx="118" cy="72" r="3.5"/>
+          <circle class="hair" cx="130" cy="70" r="3.5"/>
+          <circle class="hair" cx="142" cy="72" r="3.5"/>
+          <!-- hull -->
+          <path class="body" d="M108,76 L152,76 L146,96 L114,96 Z"/>
+          <!-- wing -->
+          <path class="body" d="M46,88 L214,88 L214,94 L46,94 Z"/>
+          <!-- span dimension -->
+          <g>
+            <line class="dimln" x1="46" y1="112" x2="214" y2="112"/>
+            <line class="dimln" x1="46" y1="106" x2="46" y2="118"/>
+            <line class="dimln" x1="214" y1="106" x2="214" y2="118"/>
+            <path class="dimln" d="M46,112 L53,109 M46,112 L53,115 M214,112 L207,109 M214,112 L207,115"/>
+            <text x="130" y="126" text-anchor="middle">span 44 m</text>
+          </g>
+        </svg>
+        <dl class="specs">
+          <div><dt>length</dt><dd>73.8 m</dd></div>
+          <div><dt>span</dt><dd>44 m</dd></div>
+          <div><dt>mass, max</dt><dd>~380 t</dd></div>
+          <div><dt>engines</dt><dd>8 × nk-87</dd></div>
+          <div><dt>in service</dt><dd>1987</dd></div>
+          <div><dt>armament</dt><dd>6 × p-270 moskit</dd></div>
+        </dl>
+        <p class="note">the missile ship — six supersonic moskit tubes on the spine, launched on the run at 550 km/h, under the radar horizon and above the wave crests. it survives: towed down the caspian coast in 2020 and beached at derbent, awaiting a museum.</p>
+      </figure>
+
+      <figure id="log">
+        <div class="figno"><span>fig. 5 — flight log</span><span class="dim">gorky · caspian sea · derbent</span></div>
+        <div class="logline"><span class="yr">1935</span><span class="pl">finland</span><span>kaario's aerosledge no. 8 rides ground effect — the first wing-in-ground craft</span></div>
+        <div class="logline"><span class="yr">1961</span><span class="pl">ussr</span><span>sm-1 flies at gorky; alexeyev at the controls</span></div>
+        <div class="logline"><span class="yr">1966</span><span class="pl">ussr</span><span>km flies on the caspian. 544 tonnes, ten engines</span></div>
+        <div class="logline"><span class="yr">1967</span><span class="pl">usa</span><span>a reconnaissance satellite finds it at kaspiysk. the analysts call it the caspian sea monster</span></div>
+        <div class="logline"><span class="yr">1972</span><span class="pl">ussr</span><span>orlyonok prototype flies</span></div>
+        <div class="logline"><span class="yr">1980</span><span class="pl">ussr</span><span>alexeyev dies. km sinks in a landing accident. the same year</span></div>
+        <div class="logline"><span class="yr">1987</span><span class="pl">ussr</span><span>lun enters service with the caspian flotilla</span></div>
+        <div class="logline last"><span class="yr">2020</span><span class="pl">russia</span><span>lun towed to derbent and beached. awaiting a museum</span></div>
+      </figure>
+
+    </section>
+
+    <!-- ============ SURFACE · h/b 0.05 → 0.00 ============ -->
+
+    <section class="band" id="surface" data-hb-top="0.05" data-hb-bot="0.0">
+      <div class="boundary">
+        <span>h/b 0.05 — cruise altitude</span>
+        <span class="right">alt 1.9 m</span>
+      </div>
+      <div class="drift">
+        <p>down here the wing's downwash cannot escape; the sea answers with lift. this is the ekranoplan's whole sky — a band thinner than the aircraft is long.</p>
+        <p>touch down.</p>
+      </div>
+
+      <div id="waterline">
+        <span>the caspian sea</span>
+        <span class="dim">0 m</span>
+      </div>
+
+      <div id="colophon">
+        <span class="lbl">colophon</span>
+        figures as commonly reported; sources disagree on the km, which was rebuilt repeatedly between 1966 and 1980 (length 92–106 m, span 32–40 m). the drag factor follows wieselsberger's classical approximation, φ = (16 h/b)² / (1 + (16 h/b)²), which overstates the gain at very low h/b — treat the curve as schematic and the direction as fact. drawings schematic; lengths and spans to scale. h/b is computed from your scroll position against the km's 37.8 m span. compiled 2026 — <a href="https://pborenstein.com">pborenstein</a>
+      </div>
+    </section>
+
   </main>
-  <footer>
-    <div class="lbl dim"><a href="https://pborenstein.com">pborenstein</a> 2026 <a href="https://picsum.photos/">picsum.photos></a></div>
+
+  <footer class="plate">
+    <div class="lbl dim"><a href="https://pborenstein.com">pborenstein</a> 2026</div>
+    <div class="lbl dim">ekranoplan.org</div>
   </footer>
+
+  <noscript><p>the altitude instrument needs javascript; the page reads fine without it. h/b falls from 1.50 at the top to 0.00 at the caspian sea.</p></noscript>
+
+  <script>
+    (function () {
+      var B = 37.8;            // reference wingspan, km, metres
+      var bands = [].map.call(document.querySelectorAll('.band'), function (el) {
+        return { el: el, top: parseFloat(el.dataset.hbTop), bot: parseFloat(el.dataset.hbBot), y0: 0, y1: 0 };
+      });
+
+      var hbEl = document.getElementById('hb');
+      var altEl = document.getElementById('alt');
+      var phiEl = document.getElementById('phi');
+      var dragEl = document.getElementById('drag');
+      var ruler = document.getElementById('ruler');
+      var marker = document.getElementById('marker');
+
+      function measure() {
+        bands.forEach(function (b) {
+          b.y0 = b.el.offsetTop;
+          b.y1 = b.y0 + b.el.offsetHeight;
+        });
+        buildRuler();
+      }
+
+      // ruler: a linear gauge in h/b, 1.50 at top to 0.00 at bottom
+      function buildRuler() {
+        [].forEach.call(ruler.querySelectorAll('.tick'), function (t) { t.remove(); });
+        var h = ruler.offsetHeight;
+        [1.5, 1.0, 0.5, 0.25, 0.1, 0.05, 0].forEach(function (v) {
+          var t = document.createElement('div');
+          t.className = 'tick';
+          t.style.top = ((1.5 - v) / 1.5 * h) + 'px';
+          t.textContent = v.toFixed(2);
+          ruler.appendChild(t);
+        });
+      }
+
+      function hbAt(y) {
+        var first = bands[0], last = bands[bands.length - 1];
+        if (y <= first.y0) return first.top;
+        if (y >= last.y1) return last.bot;
+        for (var i = 0; i < bands.length; i++) {
+          var b = bands[i];
+          if (y >= b.y0 && y < b.y1) {
+            var t = (y - b.y0) / (b.y1 - b.y0);
+            return b.top + (b.bot - b.top) * t;
+          }
+        }
+        return last.bot;
+      }
+
+      function phi(hb) { var s = 16 * hb; return s * s / (1 + s * s); }
+
+      function update() {
+        var y = window.scrollY + window.innerHeight / 2;
+        var hb = hbAt(y);
+        var p = phi(hb);
+        hbEl.textContent = hb.toFixed(3);
+        altEl.textContent = (hb * B).toFixed(1) + ' m';
+        phiEl.textContent = p.toFixed(3);
+        dragEl.textContent = '\u2212' + ((1 - p) * 100).toFixed(1) + '%';
+        marker.style.top = ((1.5 - hb) / 1.5 * ruler.offsetHeight) + 'px';
+      }
+
+      var ticking = false;
+      window.addEventListener('scroll', function () {
+        if (!ticking) {
+          ticking = true;
+          requestAnimationFrame(function () { update(); ticking = false; });
+        }
+      }, { passive: true });
+      window.addEventListener('resize', function () { measure(); update(); });
+      window.addEventListener('load', function () { measure(); update(); });
+
+      measure();
+      update();
+    })();
+  </script>
+
 </body>
 </html>
