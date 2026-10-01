@@ -28,7 +28,7 @@
 
     *, *::before, *::after { box-sizing: border-box; }
 
-    html { scroll-behavior: smooth; }
+    html { scroll-behavior: auto; }
 
     body {
       margin: 0;
@@ -175,27 +175,38 @@
 
     .boundary .right { color: var(--dim); }
 
+    /* hash-lines: faint altitude marks that drift past while you scroll */
+    .hash {
+      position: absolute;
+      left: 30%;
+      right: 0;
+      border-top: 1px dotted var(--dim);
+      color: var(--dim);
+      font-size: 9px;
+      letter-spacing: .14em;
+      text-align: right;
+      padding-top: 3px;
+    }
+
     /* sky: h/b 1.50 → 1.00 */
-    #sky { height: 170vh; }
+    #sky { height: 130vh; }
 
     #sky .drift {
-      position: sticky;
-      top: 40vh;
+      margin-top: 24vh;
       color: var(--dim);
       max-width: 34ch;
     }
 
     /* transition: h/b 1.00 → 0.50 */
-    #transition { height: 150vh; }
+    #transition { height: 120vh; }
 
     #transition .drift {
-      position: sticky;
-      top: 30vh;
+      margin-top: 18vh;
       max-width: 46ch;
     }
 
     /* ground effect: h/b 0.50 → 0.05 */
-    #ge { min-height: 420vh; }
+    #ge { min-height: 240vh; }
 
     /* surface: h/b 0.05 → 0.00 */
     #surface { min-height: 80vh; }
@@ -379,6 +390,8 @@
         <p class="dim">every conventional wing lives up here — free to climb, free to bank, free to turn. nothing on this page can reach it.</p>
         <p class="dim">descend.</p>
       </div>
+      <div class="hash" style="top:65%">h/b 1.18</div>
+      <div class="hash" style="top:85%">h/b 1.08</div>
     </section>
 
     <!-- ============ TRANSITION · h/b 1.00 → 0.50 ============ -->
@@ -394,6 +407,8 @@
         <p>at this boundary the induced-drag penalty has fallen 0.4%. the instrument is not wrong — it is boring. the interesting sky is lower.</p>
         <p>a conventional aircraft visits this band only at takeoff and landing. the ekranoplan never leaves it: above ground effect its wing is too small to fly, and in a bank the lowered wingtip meets the sea.</p>
       </div>
+      <div class="hash" style="top:70%">h/b 0.65</div>
+      <div class="hash" style="top:88%">h/b 0.56</div>
     </section>
 
     <!-- ============ GROUND EFFECT · h/b 0.50 → 0.05 ============ -->
@@ -404,7 +419,7 @@
         <span class="right">the textbooks' edge of “significant” effect</span>
       </div>
 
-      <div class="drift" style="position:sticky; top:24vh; max-width:48ch; margin-bottom:12vh;">
+      <div class="drift" style="max-width:48ch; margin-bottom:12vh;">
         <p>the textbooks call this the edge of significant ground effect. the curve disagrees: nearly everything happens in the last tenth of a span.</p>
         <p>three aircraft were built to live down there, by rostislav alexeyev's central hydrofoil design bureau in gorky — a hydrofoil yard that taught a ship to fly, not a plane to swim.</p>
       </div>
